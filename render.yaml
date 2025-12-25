@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: googleform
+    env: docker
+    region: frankfurt
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Required secrets (set these in Render Dashboard → Environment)
+      - key: FRONTEND_APP_URL
+        sync: false
+      - key: SESSION_JWT_SECRET
+        sync: false
+      - key: TOKENS_ENCRYPTION_KEY_BASE64
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

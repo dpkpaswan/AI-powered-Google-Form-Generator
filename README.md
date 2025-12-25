@@ -44,6 +44,47 @@ npm install
 npm run start
 ```
 
+## Hosting (Render)
+
+This app uses httpOnly **cookie-based sessions**, so the simplest production setup is to serve the React frontend and the API from the **same origin**.
+
+This repo supports a single Render Web Service deployment via Docker (see `Dockerfile` and `render.yaml`).
+
+### Steps
+
+1. Push this repo to GitHub.
+
+2. Render Dashboard → **New** → **Blueprint** → select your repo.
+  - Render will pick up `render.yaml` and create a Web Service.
+
+3. In the created service, set Environment Variables (Render → Service → Environment):
+  - `FRONTEND_APP_URL=https://<your-render-service-domain>`
+  - `SESSION_JWT_SECRET=<32+ chars>`
+  - `TOKENS_ENCRYPTION_KEY_BASE64=<base64 32 bytes>`
+  - `OPENAI_API_KEY=...`
+  - `OPENAI_MODEL=gpt-4.1-mini` (or your choice)
+  - `GOOGLE_OAUTH_CLIENT_ID=...`
+  - `GOOGLE_OAUTH_CLIENT_SECRET=...`
+  - `GOOGLE_OAUTH_REDIRECT_URI=https://<your-render-service-domain>/auth/google/callback`
+  - `SUPABASE_URL=...`
+  - `SUPABASE_SERVICE_ROLE_KEY=...`
+
+4. Supabase schema:
+  - Run the SQL in `supabase/schema.sql` in your Supabase SQL editor.
+
+5. Google OAuth:
+  - In Google Cloud Console → OAuth Client → add Authorized redirect URI:
+    - `https://<your-render-service-domain>/auth/google/callback`
+  - Ensure **Google Forms API** and **Google Drive API** are enabled.
+
+6. Deploy. After it’s live:
+  - Open `https://<your-render-service-domain>`
+  - Click “Sign in with Google”
+
+### Notes
+
+- If you host frontend and backend on different domains, browsers will block the session cookie (SameSite rules). The single-service setup avoids this.
+
 ## API
 
 ### GET /auth/google
