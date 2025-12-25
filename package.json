@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "node --watch src/server.js",
+    "build": "npm install --prefix FRONTEND && npm run --prefix FRONTEND build",
     "start": "node src/server.js",
     "lint": "eslint ."
   },
