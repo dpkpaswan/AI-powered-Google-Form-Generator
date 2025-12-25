@@ -15,12 +15,16 @@ import { env } from './config/env.js';
 export function createApp() {
   const app = express();
 
-  app.use(
-    cors({
-      origin: env.FRONTEND_APP_URL,
-      credentials: true
-    })
-  );
+  // Dev only: Vite runs on a different origin, so allow cross-origin cookies.
+  // Production on Render is single-origin (backend serves the built frontend), so CORS is unnecessary.
+  if (env.NODE_ENV !== 'production') {
+    app.use(
+      cors({
+        origin: env.FRONTEND_APP_URL,
+        credentials: true
+      })
+    );
+  }
 
   app.use(helmet());
   app.use(express.json({ limit: '1mb' }));
@@ -28,19 +32,26 @@ export function createApp() {
   app.use(pinoHttp({ logger }));
 
   app.get('/health', (req, res) => res.json({ ok: true }));
+
+  // Support both direct routes (/) and proxied routes (/api).
+  // Local dev historically used a Vite proxy at /api; keeping this avoids 404s in hosted envs.
   app.use(authRoute);
   app.use(generateFormRoute);
   app.use(formsRoute);
+  app.use('/api', authRoute);
+  app.use('/api', generateFormRoute);
+  app.use('/api', formsRoute);
 
-  // Production: serve the built React app from the same server.
-  if (env.NODE_ENV === 'production') {
-    const buildDir = path.resolve(process.cwd(), 'FRONTEND', 'build');
-    const indexHtml = path.join(buildDir, 'index.html');
+  // Serve the built React app from the same server when present.
+  // This is the expected production setup on Render (single service).
+  const buildDir = path.resolve(process.cwd(), 'FRONTEND', 'build');
+  const indexHtml = path.join(buildDir, 'index.html');
 
-    if (fs.existsSync(indexHtml)) {
-      app.use(express.static(buildDir));
-      app.get('*', (req, res) => res.sendFile(indexHtml));
-    }
+  if (fs.existsSync(indexHtml)) {
+    app.use(express.static(buildDir));
+    app.get('*', (req, res) => res.sendFile(indexHtml));
+  } else {
+    logger.warn({ buildDir }, 'Frontend build not found; serving API only');
   }
 
   app.use(errorHandler);
