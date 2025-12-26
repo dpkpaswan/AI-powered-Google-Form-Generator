@@ -28,7 +28,14 @@ npm install
   - `GOOGLE_OAUTH_CLIENT_SECRET`
   - `GOOGLE_OAUTH_REDIRECT_URI`
 
-This project intentionally does **not** use service accounts.
+This project is designed around **user-consent OAuth** (forms are owned by the signed-in user). If you choose to use a **service account** for experiments, never commit the key JSON—use environment variables / secret management only.
+
+### Security note (service account key exposure)
+
+If you ever accidentally publish a service account key (like a `gen-lang-client-*.json` file):
+- Treat it as compromised and **revoke/disable it immediately** in Google Cloud Console.
+- **Rotate** the key (create a new one only if you still need it).
+- Remove it from git history (not just the latest commit) before making the repo public again.
 
 ## Run
 

@@ -17,6 +17,13 @@ const EnvSchema = z.object({
   GOOGLE_OAUTH_CLIENT_ID: z.string().min(10),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(10),
   GOOGLE_OAUTH_REDIRECT_URI: z.string().url(),
+  // Optional: long-lived refresh token for server-only OAuth2 usage (not required for the app's login flow).
+  GOOGLE_OAUTH_REFRESH_TOKEN: z.string().optional().or(z.literal('')),
+
+  // Optional: service account credentials (do NOT commit these).
+  GOOGLE_SERVICE_ACCOUNT_FILE: z.string().optional().or(z.literal('')),
+  GOOGLE_SERVICE_ACCOUNT_JSON: z.string().optional().or(z.literal('')),
+  GOOGLE_SERVICE_ACCOUNT_JSON_BASE64: z.string().optional().or(z.literal('')),
 
   // Session + token encryption
   SESSION_JWT_SECRET: z.string().min(32),
