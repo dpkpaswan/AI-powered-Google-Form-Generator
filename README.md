@@ -2,6 +2,29 @@
 
 Full-stack app (Node/Express backend + React/Vite frontend) where users sign in with Google and generate/manage Google Forms inside their own Google account (owned by the user and stored in the user’s Google Drive).
 
+## Features
+
+- Google OAuth sign-in (user-consent flow; forms are owned by the signed-in user)
+- AI-assisted Google Form generation from a prompt
+- Dashboard to view/manage generated forms (metadata stored in Supabase)
+- Edit forms in the app and sync updates to Google Forms
+
+## Screenshots / UI Preview
+
+- Sign in with Google
+  ![Sign in with Google](docs/images/Sign%20in%20with%20Google.png)
+
+- Dashboard view
+  ![Dashboard view](docs/images/Dashboard%20.png)
+
+- AI Form Generation screen
+  ![AI Form Generation screen](docs/images/Create%20Form%20with%20AI.png)
+
+- My Forms (preview / edit / regenerate)
+  ![My Forms (preview / edit / regenerate)](docs/images/My%20Forms.png)
+
+UI shown is from the working MVP. Final UI may vary slightly.
+
 ## Setup
 
 1. Install deps:
