@@ -167,3 +167,7 @@ Edits a form via your website UI, then syncs changes to Google Forms using `form
 - OAuth secrets stay on the backend only.
 - Refresh tokens are stored server-side (encrypted at rest via `TOKENS_ENCRYPTION_KEY_BASE64`).
 - Forms are created/updated using Google Forms API under the logged-in user's account.
+
+## License
+
+See [LICENSE](LICENSE). All Rights Reserved — repository is publicly viewable for evaluation/review/learning only; no reuse or redistribution without explicit written permission.
