@@ -1,173 +1,82 @@
 # AI-powered Google Form Generator
 
-Full-stack app (Node/Express backend + React/Vite frontend) where users sign in with Google and generate/manage Google Forms inside their own Google account (owned by the user and stored in the user’s Google Drive).
+Full-stack app: Node/Express backend + React/Vite frontend. Users sign in with Google and generate/manage Google Forms in their own Google account.
 
-## Features
+This README highlights local dev steps, environment variables, and the backend structure (recent reorganization of controllers/services/utils).
 
-- Google OAuth sign-in (user-consent flow; forms are owned by the signed-in user)
-- AI-assisted Google Form generation from a prompt
-- Dashboard to view/manage generated forms (metadata stored in Supabase)
-- Edit forms in the app and sync updates to Google Forms
+Summary
+- Google user-consent OAuth (forms are owned by the signed-in user)
+- AI-assisted form generation (Google Gemini)
+- Google Forms API integration to create/update forms
+- Metadata persistence in Supabase
 
-## Screenshots / UI Preview
+Quick start (development)
+1. Clone and install backend deps:
 
-- Sign in with Google
-  ![Sign in with Google](docs/images/Sign%20in%20with%20Google.png)
-
-- Dashboard view
-  ![Dashboard view](docs/images/Dashboard%20.png)
-
-- AI Form Generation screen
-  ![AI Form Generation screen](docs/images/Create%20Form%20with%20AI.png)
-
-- My Forms (preview / edit / regenerate)
-  ![My Forms (preview / edit / regenerate)](docs/images/My%20Forms.png)
-
-UI shown is from the working MVP. Final UI may vary slightly.
-
-## Setup
-
-1. Install deps:
-
-```bash
+```powershell
 npm install
 ```
 
-2. Create `.env` from `.env.example`.
+2. Create a `.env` (copy from `.env.example`) and set required variables (see below).
 
-3. Supabase schema:
-- Run the SQL in `supabase/schema.sql` in your Supabase SQL editor.
+3. Start backend (defaults to port 3000):
 
-4. Google OAuth (user consent flow):
-
-- In Google Cloud Console, create an **OAuth 2.0 Client ID** (Web application).
-- Add Authorized redirect URI:
-  - `http://localhost:3000/auth/google/callback`
-- Enable APIs:
-  - **Google Forms API**
-  - **Google Drive API**
-- Set required backend env vars:
-  - `GOOGLE_OAUTH_CLIENT_ID`
-  - `GOOGLE_OAUTH_CLIENT_SECRET`
-  - `GOOGLE_OAUTH_REDIRECT_URI`
-
-This project is designed around **user-consent OAuth** (forms are owned by the signed-in user). If you choose to use a **service account** for experiments, never commit the key JSON—use environment variables / secret management only.
-
-### Security note (service account key exposure)
-
-If you ever accidentally publish a service account key (like a `gen-lang-client-*.json` file):
-- Treat it as compromised and **revoke/disable it immediately** in Google Cloud Console.
-- **Rotate** the key (create a new one only if you still need it).
-- Remove it from git history (not just the latest commit) before making the repo public again.
-
-## Run
-
-```bash
+```powershell
 npm run dev
 ```
 
-In another terminal:
+4. Frontend (in another terminal):
 
-```bash
+```powershell
 cd FRONTEND
 npm install
-npm run start
+npm run dev
 ```
 
-## Hosting (Render)
+Helpful developer scripts
+- Check Supabase `forms` table (local env):
 
-This app uses httpOnly **cookie-based sessions**, so the simplest production setup is to serve the React frontend and the API from the **same origin**.
-
-This repo supports a single Render Web Service deployment via Docker (see `Dockerfile` and `render.yaml`).
-
-### Steps
-
-1. Push this repo to GitHub.
-
-2. Render Dashboard → **New** → **Blueprint** → select your repo.
-  - Render will pick up `render.yaml` and create a Web Service.
-
-3. In the created service, set Environment Variables (Render → Service → Environment):
-  - `FRONTEND_APP_URL=https://<your-render-service-domain>`
-  - `SESSION_JWT_SECRET=<32+ chars>`
-  - `TOKENS_ENCRYPTION_KEY_BASE64=<base64 32 bytes>`
-  - `OPENAI_API_KEY=...`
-  - `OPENAI_MODEL=gpt-4.1-mini` (or your choice)
-  - `GOOGLE_OAUTH_CLIENT_ID=...`
-  - `GOOGLE_OAUTH_CLIENT_SECRET=...`
-  - `GOOGLE_OAUTH_REDIRECT_URI=https://<your-render-service-domain>/auth/google/callback`
-  - `SUPABASE_URL=...`
-  - `SUPABASE_SERVICE_ROLE_KEY=...`
-
-4. Supabase schema:
-  - Run the SQL in `supabase/schema.sql` in your Supabase SQL editor.
-
-5. Google OAuth:
-  - In Google Cloud Console → OAuth Client → add Authorized redirect URI:
-    - `https://<your-render-service-domain>/auth/google/callback`
-  - Ensure **Google Forms API** and **Google Drive API** are enabled.
-
-6. Deploy. After it’s live:
-  - Open `https://<your-render-service-domain>`
-  - Click “Sign in with Google”
-
-### Notes
-
-- If you host frontend and backend on different domains, browsers will block the session cookie (SameSite rules). The single-service setup avoids this.
-
-## API
-
-### GET /auth/google
-
-Starts Google OAuth 2.0 user-consent flow.
-
-Scopes used:
-- `https://www.googleapis.com/auth/forms.body`
-- `https://www.googleapis.com/auth/drive`
-
-### GET /me
-
-Returns current logged-in user (or null) based on the httpOnly session cookie.
-
-### POST /generate-form
-
-Creates a new Google Form owned by the logged-in user, then stores metadata in Supabase.
-
-Body:
-```json
-{
-  "prompt": "Create a feedback form for a new mobile app",
-  "formType": "feedback",
-  "audience": "students",
-  "language": "english",
-  "tone": "formal"
-}
+```powershell
+node -r dotenv/config scripts/check-supabase.mjs
 ```
 
-Response includes:
-- `formId`
-- `formUrl` (responder/view URL)
-- `editUrl`
-- `responderUrl`
+Environment variables (minimum)
+- `PORT` (optional)
+- `FRONTEND_APP_URL` (e.g. http://localhost:4028)
+- `GEMINI_API_KEY` (Google Generative API key)
+- `GOOGLE_OAUTH_CLIENT_ID`
+- `GOOGLE_OAUTH_CLIENT_SECRET`
+- `GOOGLE_OAUTH_REDIRECT_URI` (e.g. http://localhost:3000/auth/google/callback)
+- `SESSION_JWT_SECRET` (32+ chars)
+- `TOKENS_ENCRYPTION_KEY_BASE64` (base64, 32 bytes)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY` (service role key; not the anon key)
 
-### GET /forms
+Database
+- Run SQL in `supabase/schema.sql` to create the required tables (`forms`, `form_questions`, ...).
 
-Lists forms previously generated by the logged-in user (from Supabase).
+Backend structure (high level)
+- `src/controllers/` — Express route handlers (thin controllers). Controllers use `asyncHandler` to forward errors to the centralized middleware.
+- `src/services/` — Business logic: Gemini integration, Google Forms API wrappers, Supabase queries.
+- `src/utils/` — Small utilities added:
+  - `asyncHandler.js` — wraps async route handlers
+  - `appError.js` — structured `AppError` class for consistent errors
+- `src/middlewares/` — auth, validation, rate limiting, error handler.
 
-### GET /forms/:formId
+Error handling
+- Controllers throw errors or rethrow service errors. The global `src/middlewares/errorHandler.js` logs and returns consistent JSON error responses.
 
-Fetches the form structure from Google Forms API for editing in the website UI.
+Notes on recent refactor
+- No runtime behavior was changed — refactors were focused on readability, consistent async handling, and introducing `AppError` for future use.
+- If you want, I can convert service-level throws to `AppError` instances for even clearer error semantics.
 
-### PUT /forms/:formId
+Production / deployment
+- Recommended: serve frontend and backend from the same origin (single service) so httpOnly session cookies work without cross-site issues.
+- See `Dockerfile` and `render.yaml` for a reference single-service deployment.
 
-Edits a form via your website UI, then syncs changes to Google Forms using `forms.batchUpdate`.
+Run and test
+- Backend dev: `npm run dev`
+- Frontend dev: `cd FRONTEND && npm run dev`
+- Use the app at `http://localhost:4028` (frontend) which proxies API requests to `http://127.0.0.1:3000/api` in dev via Vite.
 
-## Notes
-
-- OAuth secrets stay on the backend only.
-- Refresh tokens are stored server-side (encrypted at rest via `TOKENS_ENCRYPTION_KEY_BASE64`).
-- Forms are created/updated using Google Forms API under the logged-in user's account.
-
-## License
-
-See [LICENSE](LICENSE). All Rights Reserved — repository is publicly viewable for evaluation/review/learning only; no reuse or redistribution without explicit written permission.
+If anything here should be extended (examples, diagrams, or a CONTRIBUTING guide), tell me which section and I'll expand it.

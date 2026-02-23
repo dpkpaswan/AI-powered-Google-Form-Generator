@@ -23,6 +23,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
     "openai": "^4.73.0",
     "pino": "^9.5.0",
     "pino-http": "^10.4.0",
