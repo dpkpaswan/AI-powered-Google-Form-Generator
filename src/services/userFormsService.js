@@ -96,13 +96,17 @@ function mapGoogleFormToEditableModel(googleForm) {
 
 function toGoogleItemRequest(question, index, { isQuiz } = {}) {
   const title = question.title;
+  const sanitizeDisplayText = (value) => {
+    if (value === undefined || value === null) return '';
+    return String(value).replace(/\s+/g, ' ').trim();
+  };
   const required = !!question.required;
 
   const base = {
     createItem: {
       location: { index },
       item: {
-        title,
+        title: sanitizeDisplayText(title),
         questionItem: {
           question: {
             required
@@ -131,19 +135,25 @@ function toGoogleItemRequest(question, index, { isQuiz } = {}) {
     case 'multiple_choice':
       base.createItem.item.questionItem.question.choiceQuestion = {
         type: 'RADIO',
-        options: (question.choices ?? []).length ? question.choices.map((v) => ({ value: v })) : [{ value: 'Option 1' }]
+        options: (question.choices ?? []).length
+          ? question.choices.map((v) => ({ value: sanitizeDisplayText(v) }))
+          : [{ value: 'Option 1' }]
       };
       break;
     case 'checkboxes':
       base.createItem.item.questionItem.question.choiceQuestion = {
         type: 'CHECKBOX',
-        options: (question.choices ?? []).length ? question.choices.map((v) => ({ value: v })) : [{ value: 'Option 1' }]
+        options: (question.choices ?? []).length
+          ? question.choices.map((v) => ({ value: sanitizeDisplayText(v) }))
+          : [{ value: 'Option 1' }]
       };
       break;
     case 'dropdown':
       base.createItem.item.questionItem.question.choiceQuestion = {
         type: 'DROP_DOWN',
-        options: (question.choices ?? []).length ? question.choices.map((v) => ({ value: v })) : [{ value: 'Option 1' }]
+        options: (question.choices ?? []).length
+          ? question.choices.map((v) => ({ value: sanitizeDisplayText(v) }))
+          : [{ value: 'Option 1' }]
       };
       break;
     case 'linear_scale': {

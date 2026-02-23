@@ -9,9 +9,7 @@ const EnvSchema = z.object({
   // but user-authenticated routes should not rely on it.
   API_KEY: z.string().optional().or(z.literal('')),
 
-  OPENAI_API_KEY: z.string().min(10),
-  OPENAI_MODEL: z.string().default('gpt-4.1-mini'),
-  OPENAI_VISION_MODEL: z.string().optional().or(z.literal('')),
+  // OPENAI_API_KEY, OPENAI_MODEL, OPENAI_VISION_MODEL removed (no longer required)
 
   // OAuth2 (user consent)
   GOOGLE_OAUTH_CLIENT_ID: z.string().min(10),
@@ -33,7 +31,8 @@ const EnvSchema = z.object({
   FRONTEND_APP_URL: z.string().url().default('http://localhost:4028'),
 
   SUPABASE_URL: z.string().url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20)
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
+  GEMINI_API_KEY: z.string().min(10)
 });
 
 export const env = EnvSchema.parse(process.env);

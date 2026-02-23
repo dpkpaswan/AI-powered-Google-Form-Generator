@@ -1,6 +1,14 @@
 import { google } from 'googleapis';
 import { getOAuthClientForUser } from './googleOAuthService.js';
 
+// Sanitize display text for Google Forms (no newlines allowed in displayed strings)
+function sanitizeDisplayText(value) {
+  if (value === undefined || value === null) return '';
+  const s = String(value);
+  // Replace any newline or multiple whitespace with a single space and trim
+  return s.replace(/\s+/g, ' ').trim();
+}
+
 function googleApiErrorStatus(cause) {
   if (typeof cause?.response?.status === 'number') return cause.response.status;
   if (Number.isInteger(cause?.code)) return cause.code;
@@ -31,7 +39,7 @@ function toGoogleItemRequest(question, index, { isQuiz } = {}) {
     createItem: {
       location: { index },
       item: {
-        title,
+        title: sanitizeDisplayText(title),
         questionItem: {
           question: {
             required
@@ -60,19 +68,25 @@ function toGoogleItemRequest(question, index, { isQuiz } = {}) {
     case 'multiple_choice':
       base.createItem.item.questionItem.question.choiceQuestion = {
         type: 'RADIO',
-        options: (question.choices ?? []).length ? question.choices.map((v) => ({ value: v })) : [{ value: 'Option 1' }]
+        options: (question.choices ?? []).length
+          ? question.choices.map((v) => ({ value: sanitizeDisplayText(v) }))
+          : [{ value: 'Option 1' }]
       };
       break;
     case 'checkboxes':
       base.createItem.item.questionItem.question.choiceQuestion = {
         type: 'CHECKBOX',
-        options: (question.choices ?? []).length ? question.choices.map((v) => ({ value: v })) : [{ value: 'Option 1' }]
+        options: (question.choices ?? []).length
+          ? question.choices.map((v) => ({ value: sanitizeDisplayText(v) }))
+          : [{ value: 'Option 1' }]
       };
       break;
     case 'dropdown':
       base.createItem.item.questionItem.question.choiceQuestion = {
         type: 'DROP_DOWN',
-        options: (question.choices ?? []).length ? question.choices.map((v) => ({ value: v })) : [{ value: 'Option 1' }]
+        options: (question.choices ?? []).length
+          ? question.choices.map((v) => ({ value: sanitizeDisplayText(v) }))
+          : [{ value: 'Option 1' }]
       };
       break;
     case 'linear_scale': {

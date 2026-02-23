@@ -1,3 +1,5 @@
+
+
 import express from 'express';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
@@ -14,6 +16,11 @@ import { env } from './config/env.js';
 
 export function createApp() {
   const app = express();
+  // Debugging middleware: log all requests
+  app.use((req, res, next) => {
+    logger.debug({ method: req.method, url: req.url, headers: req.headers, cookies: req.cookies }, 'Incoming request');
+    next();
+  });
 
   // Dev only: Vite runs on a different origin, so allow cross-origin cookies.
   // Production on Render is single-origin (backend serves the built frontend), so CORS is unnecessary.

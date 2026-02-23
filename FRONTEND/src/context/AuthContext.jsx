@@ -12,7 +12,17 @@ export function AuthProvider({ children }) {
     (async () => {
       try {
         const { user: me } = await getMe();
-        if (!cancelled) setUser(me || null);
+        if (!cancelled) {
+          setUser(me || null);
+          // If a user was returned, notify the app to show a welcome message.
+          try {
+            if (me && typeof window !== 'undefined' && window.dispatchEvent) {
+              window.dispatchEvent(new CustomEvent('app_welcome', { detail: { name: me?.name || '' } }));
+            }
+          } catch {
+            // ignore dispatch errors
+          }
+        }
       } catch {
         if (!cancelled) setUser(null);
       } finally {

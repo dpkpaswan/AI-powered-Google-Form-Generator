@@ -7,6 +7,7 @@ import FormParameters from './components/FormParameters';
 import GenerationProgress from './components/GenerationProgress';
 import FormPreview from './components/FormPreview';
 import { extractFromImages, generateForm } from '../../services/formGeneratorApi';
+import { saveFormToStorage, FORMS_CHANGED_EVENT } from '../../utils/formsStorage';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const CreateForm = () => {
@@ -202,6 +203,21 @@ const CreateForm = () => {
       };
 
       setGeneratedForm(formToStore);
+      // Persist locally so dashboard can show the generated form immediately
+      try {
+        saveFormToStorage(formToStore);
+      } catch {
+        // ignore local storage errors
+      }
+      // Notify other parts of the app that forms have changed.
+      try {
+        // Dispatch a generic event so pages listening can reload.
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new Event(FORMS_CHANGED_EVENT));
+        }
+      } catch {
+        // ignore
+      }
 
       setToastMessage('Form generated successfully!');
       setTimeout(() => setToastMessage(''), 3000);

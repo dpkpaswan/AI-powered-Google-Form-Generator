@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FORMS_CHANGED_EVENT, loadSavedForms } from '../../utils/formsStorage';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
@@ -35,13 +36,53 @@ const MyForms = () => {
       try {
         const { forms: rows } = await listMyForms();
         if (cancelled) return;
-        setForms(rows || []);
+        // Merge in any locally-saved generated forms (not yet persisted to backend)
+        try {
+          const saved = loadSavedForms();
+          const savedMapped = (saved || []).map((s) => ({
+            google_form_id: s?.id,
+            title: s?.title,
+            description: s?.description,
+            responder_url: s?.googleFormLink,
+            edit_url: s?.editUrl,
+            created_at: s?.createdAt,
+            form_type: typeof s?.type === 'string' ? s.type.toLowerCase() : undefined,
+            audience: typeof s?.audience === 'string' ? s.audience.toLowerCase() : undefined,
+            language: typeof s?.language === 'string' ? s.language.toLowerCase() : undefined,
+            tone: typeof s?.tone === 'string' ? s.tone.toLowerCase() : undefined,
+            responses: s?.responses
+          }));
+
+          const merged = Array.isArray(rows) ? [...rows] : [];
+          for (const s of savedMapped) {
+            if (!s?.google_form_id) continue;
+            const exists = merged.find((r) => String(r?.google_form_id) === String(s.google_form_id));
+            if (!exists) merged.unshift(s);
+          }
+          setForms(merged || []);
+        } catch {
+          setForms(rows || []);
+        }
       } catch {
         if (!cancelled) setForms([]);
       }
     })();
+
+    // Reload when other parts of the app signal that forms changed.
+    const onChanged = async () => {
+      try {
+        const { forms: rows } = await listMyForms();
+        setForms(rows || []);
+      } catch {
+        setForms([]);
+      }
+    };
+
+    window?.addEventListener?.(FORMS_CHANGED_EVENT, onChanged);
+
     return () => {
       cancelled = true;
+      window?.removeEventListener?.(FORMS_CHANGED_EVENT, onChanged);
     };
   }, []);
 

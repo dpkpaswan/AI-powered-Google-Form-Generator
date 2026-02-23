@@ -6,6 +6,7 @@ export function beginGoogleLogin() {
 }
 
 export async function getMe() {
+  // Use proxied base URL; requests go to '/api/me' in dev via proxy
   const { data } = await formGeneratorApi.get('/me');
   return data;
 }

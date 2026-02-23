@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // In production we typically serve the frontend from the same origin as the backend.
 // In dev, VITE_API_BASE_URL is set to '/api' so Vite can proxy to the backend.
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+// Default to '/api' to match the Vite proxy when the env var is not present.
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const formGeneratorApi = axios.create({
   baseURL: apiBaseUrl,

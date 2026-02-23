@@ -8,6 +8,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const [welcome, setWelcome] = useState(null);
 
   const navigationItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
@@ -24,6 +25,20 @@ const Header = () => {
   const toggleUserMenu = () => {
     setIsUserMenuOpen(!isUserMenuOpen);
   };
+
+  // Listen for a one-time welcome event triggered after login
+  React.useEffect(() => {
+    const onWelcome = (e) => {
+      try {
+        setWelcome({ name: e?.detail?.name || '' });
+        setTimeout(() => setWelcome(null), 3500);
+      } catch {
+        // noop
+      }
+    };
+    window?.addEventListener?.('app_welcome', onWelcome);
+    return () => window?.removeEventListener?.('app_welcome', onWelcome);
+  }, []);
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
@@ -134,6 +149,17 @@ const Header = () => {
           </div>
         </div>
       </div>
+      {welcome && (
+        <div className="fixed top-16 right-4 z-300 animate-slide-in">
+          <div className="bg-success text-success-foreground rounded-md shadow-elevation-4 px-4 py-3 md:px-5 md:py-4 flex items-center gap-3">
+            <Icon name="Smile" size={18} />
+            <div>
+              <p className="text-sm font-medium">Welcome{welcome?.name ? `, ${welcome.name}` : ''}!</p>
+              <p className="text-xs text-success-foreground/80">Glad to see you.</p>
+            </div>
+          </div>
+        </div>
+      )}
       {isMobileMenuOpen && (
         <>
           <div

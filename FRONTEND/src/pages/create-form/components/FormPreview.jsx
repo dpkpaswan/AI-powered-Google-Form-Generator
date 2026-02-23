@@ -95,7 +95,7 @@ const FormPreview = ({ formData, onCopy, onOpen, onRegenerate, onSave, isGenerat
                 iconPosition="left"
                 onClick={onCopy}
                 fullWidth
-                className="sm:flex-none"
+                className="sm:w-auto"
               >
                 Copy
               </Button>
@@ -106,7 +106,7 @@ const FormPreview = ({ formData, onCopy, onOpen, onRegenerate, onSave, isGenerat
                 iconPosition="left"
                 onClick={onOpen}
                 fullWidth
-                className="sm:flex-none"
+                className="sm:w-auto"
               >
                 Open
               </Button>
