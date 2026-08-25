@@ -442,14 +442,3 @@ A `render.yaml` blueprint is included for one-click deployment:
 
 ---
 
-## 📜 License
-
-**Copyright © 2025 Deepak Paswan — All Rights Reserved.**
-
-This repository is made publicly viewable for **academic review, hackathon judging, and evaluation purposes only**. No license is granted to use, copy, modify, distribute, or create derivative works. See [LICENSE](LICENSE) for full terms.
-
----
-
-<p align="center">
-  Built with ❤️ by <strong>Deepak Paswan</strong>
-</p>
